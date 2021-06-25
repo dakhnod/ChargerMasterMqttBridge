@@ -129,6 +129,6 @@ class MqttBridge:
                         self.publish(f'chargers/{charger_num}/state', 'communication_error')
 
 
-if __name__ == 'mqtt.__main__':
+if __name__ in ['mqtt.__main__', '__main__']:
     bridge = MqttBridge()
     bridge.main()
