@@ -72,8 +72,9 @@ class MqttBridge:
                 self.charger_controllers[charger_num]['controller'].start_storage_lipo(channel_num, cell_count, current_ma)
         except json.JSONDecodeError as e:
             print('error decoding command')
-        except ValueError as e:
+        except KeyError as e:
             print('missing command params')
+            print(e)
 
     def run_loop(self):
         while True:
