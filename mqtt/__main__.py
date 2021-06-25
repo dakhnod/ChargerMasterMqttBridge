@@ -62,6 +62,7 @@ class MqttBridge:
 
             if command == 'stop':
                 self.charger_controllers[charger_num]['controller'].stop_charge(channel_num)
+                return
 
             cell_count = data['cell_count']
             current_ma = data['current_ma']
