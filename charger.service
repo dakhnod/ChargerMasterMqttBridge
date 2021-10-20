@@ -1,0 +1,12 @@
+[Unit]
+Description=Charger MQTT Bridge
+After=pinger.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=/usr/bin/python3 -u -m mqtt
+WorkingDirectory=/home/pi/bin/ChargerMasterMqttBridge
+
+[Install]
+WantedBy=default.target

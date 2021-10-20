@@ -1,0 +1,8 @@
+[Unit]
+Description=Timer to delay charger service start
+
+[Timer]
+OnBootSec=60
+
+[Install]
+WantedBy=timers.target
