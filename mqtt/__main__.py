@@ -60,8 +60,8 @@ class MqttBridge:
 
         command_is_for_next = parts[1] == 'next'
 
-        charger_num = int(parts[1]) if command_is_for_next else 0
-        channel_num = int(parts[3]) if command_is_for_next else 0
+        charger_num = int(parts[1]) if not command_is_for_next else 0
+        channel_num = int(parts[3]) if not command_is_for_next else 0
         try:
             data = json.loads(message.payload)
             command = data['command']
