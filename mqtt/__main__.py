@@ -128,10 +128,11 @@ class MqttBridge:
 
                         cell_connected = current_cells[0] > 1000
                         main_connected = current_data['voltage'] > cell_threshold
-                        battery_connected = cell_connected and main_connected
+                        battery_connected = cell_connected
 
-                        if channel_num == 0:
-                            print(f'cell 0: {current_cells[0]}, connected: {cell_connected}     main: {current_data["voltage"]}, connected: {main_connected}, battery: {battery_connected}')
+                        if last_channel_data.get('battery_connected', None) is not battery_connected:
+                            last_channel_data['battery_connected'] = battery_connected
+                            print(f'channel #{channel_num} {"conneted" if battery_connected else "disconnected"}')
 
                         last_channel_data[channel_num] = last_data
                 except controller.DeviceNotConnectedError:
