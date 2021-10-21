@@ -131,7 +131,7 @@ class MqttBridge:
                         battery_connected = cell_connected
 
                         if last_channel_data.get('battery_connected', None) is not battery_connected:
-                            last_channel_data['battery_connected'] = battery_connected
+                            last_data['battery_connected'] = battery_connected
                             print(f'channel #{channel_num} {"conneted" if battery_connected else "disconnected"}')
 
                         last_channel_data[channel_num] = last_data
