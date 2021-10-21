@@ -78,8 +78,10 @@ class MqttBridge:
             print(e)
 
     def run_loop(self):
+        next_publish = 0
+        publish_queue = {}
         while True:
-            time.sleep(5)
+            # time.sleep(5)
             for charger_num in range(len(self.charger_controllers)):
                 controller_data = self.charger_controllers[charger_num]
                 time.sleep(0.1)
@@ -106,7 +108,8 @@ class MqttBridge:
                                 last_data[key] = current_value
                                 topic = f'chargers/{charger_num}/channels/{channel_num}/{key}'
                                 print(f'publishing {topic}')
-                                self.publish(topic, current_value)
+                                # self.publish(topic, current_value)
+                                publish_queue[topic] = current_value
 
                         last_cells = last_data.get('cells', [-1] * 6)
                         current_cells = current_data['cells']
@@ -115,7 +118,8 @@ class MqttBridge:
                                 last_cells[cell_num] = current_cells[cell_num]
                                 topic = f'chargers/{charger_num}/channels/{channel_num}/cells/{cell_num}'
                                 print(f'publishing {topic}')
-                                self.publish(topic, current_cells[cell_num])
+                                # self.publish(topic, current_cells[cell_num])
+                                publish_queue[topic] = current_cells[cell_num]
                         last_data['cells'] = last_cells
 
                         last_channel_data[channel_num] = last_data
@@ -129,6 +133,10 @@ class MqttBridge:
                         print(f'charger #{charger_num} communication error')
                         self.charger_controllers[charger_num]['state'] = 'communication_error'
                         self.publish(f'chargers/{charger_num}/state', 'communication_error')
+            if time.time() > next_publish:
+                for topic, value in publish_queue:
+                    self.publish(topic, value)
+                next_publish = time.time() + 5
 
 
 if __name__ in ['mqtt.__main__', '__main__']:
