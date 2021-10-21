@@ -107,7 +107,7 @@ class MqttBridge:
                             if current_value != last_value:
                                 last_data[key] = current_value
                                 topic = f'chargers/{charger_num}/channels/{channel_num}/{key}'
-                                print(f'publishing {topic}')
+                                # print(f'publishing {topic}')
                                 # self.publish(topic, current_value)
                                 publish_queue[topic] = current_value
 
@@ -117,10 +117,16 @@ class MqttBridge:
                             if current_cells[cell_num] != last_cells[cell_num]:
                                 last_cells[cell_num] = current_cells[cell_num]
                                 topic = f'chargers/{charger_num}/channels/{channel_num}/cells/{cell_num}'
-                                print(f'publishing {topic}')
+                                # print(f'publishing {topic}')
                                 # self.publish(topic, current_cells[cell_num])
                                 publish_queue[topic] = current_cells[cell_num]
                         last_data['cells'] = last_cells
+
+                        cell_connected = current_cells[0] > 1000
+                        main_connected = current_data['voltage'] > 1000
+                        battery_connected = cell_connected and main_connected
+
+                        print(f'cell 0: {current_cells[0]}, connected: {cell_connected}     main: {current_data["voltage"]}, connected: {main_connected}, battery: {battery_connected}')
 
                         last_channel_data[channel_num] = last_data
                 except controller.DeviceNotConnectedError:
