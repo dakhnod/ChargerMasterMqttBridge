@@ -134,8 +134,9 @@ class MqttBridge:
                         self.charger_controllers[charger_num]['state'] = 'communication_error'
                         self.publish(f'chargers/{charger_num}/state', 'communication_error')
             if time.time() > next_publish:
-                for topic, value in publish_queue:
-                    self.publish(topic, value)
+                for topic in publish_queue:
+                    self.publish(topic, publish_queue[topic])
+                publish_queue = {}
                 next_publish = time.time() + 5
 
 
