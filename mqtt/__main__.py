@@ -16,6 +16,7 @@ class MqttBridge:
         self.mqtt.on_message = self.on_message
         self.mqtt.on_connect = self.on_connect
         self.mqtt.on_disconnect = self.on_disconnect
+        self.next_command = None
 
     def on_disconnect(self, arg1, arg2, arg4):
         print('mqtt disconnected')
@@ -23,6 +24,7 @@ class MqttBridge:
     def on_connect(self, arg1, arg2, arg3, arg4):
         print('mqtt connected')
         self.mqtt.subscribe('chargers/+/channels/+')
+        self.mqtt.subscribe('chargers/next')
 
     def publish(self, topic: str, payload: str):
         self.mqtt.publish(topic, payload, retain=True)
@@ -52,10 +54,14 @@ class MqttBridge:
         self.run_loop()
 
     def on_message(self, mqtt_object, status, message):
+
         topic = message.topic
         parts = topic.split('/')
-        charger_num = int(parts[1])
-        channel_num = int(parts[3])
+
+        command_is_for_next = parts[1] == 'next'
+
+        charger_num = int(parts[1]) if command_is_for_next else 0
+        channel_num = int(parts[3]) if command_is_for_next else 0
         try:
             data = json.loads(message.payload)
             command = data['command']
@@ -67,9 +73,16 @@ class MqttBridge:
             cell_count = data['cell_count']
             current_ma = data['current_ma']
 
-            if command == 'charge':
+            if command_is_for_next:
+                self.next_command = {
+                    'cell_count': cell_count,
+                    'current_ma': current_ma,
+                    'timeout': time.time() + 60
+                }
+                print(f'command for next scheduled: {self.next_command}')
+            elif command == 'charge':
                 self.charger_controllers[charger_num]['controller'].start_charge_lipo(channel_num, cell_count, current_ma)
-            if command == 'storage':
+            elif command == 'storage':
                 self.charger_controllers[charger_num]['controller'].start_storage_lipo(channel_num, cell_count, current_ma)
         except json.JSONDecodeError as e:
             print('error decoding command')
