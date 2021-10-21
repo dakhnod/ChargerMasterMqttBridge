@@ -113,7 +113,9 @@ class MqttBridge:
 
                         last_cells = last_data.get('cells', [-1] * 6)
                         current_cells = current_data['cells']
+                        cell_sum = 0
                         for cell_num in range(0, len(current_data['cells'])):
+                            cell_sum += current_cells[cell_num]
                             if current_cells[cell_num] != last_cells[cell_num]:
                                 last_cells[cell_num] = current_cells[cell_num]
                                 topic = f'chargers/{charger_num}/channels/{channel_num}/cells/{cell_num}'
@@ -122,8 +124,10 @@ class MqttBridge:
                                 publish_queue[topic] = current_cells[cell_num]
                         last_data['cells'] = last_cells
 
+                        cell_threshold = cell_sum * 0.8
+
                         cell_connected = current_cells[0] > 1000
-                        main_connected = current_data['voltage'] > 1000
+                        main_connected = current_data['voltage'] > cell_threshold
                         battery_connected = cell_connected and main_connected
 
                         if channel_num == 0:
