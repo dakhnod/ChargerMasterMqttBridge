@@ -126,7 +126,7 @@ class MqttBridge:
                         main_connected = current_data['voltage'] > 1000
                         battery_connected = cell_connected and main_connected
 
-                        if channel_num == 1:
+                        if channel_num == 0:
                             print(f'cell 0: {current_cells[0]}, connected: {cell_connected}     main: {current_data["voltage"]}, connected: {main_connected}, battery: {battery_connected}')
 
                         last_channel_data[channel_num] = last_data
