@@ -145,6 +145,11 @@ class MqttBridge:
 
                         if last_data.get('battery_connected', None) is not battery_connected:
                             last_data['battery_connected'] = battery_connected
+
+                            if battery_connected and self.next_command is not None:
+                                if time.time() < self.next_command['timeout']:
+                                    charger_controller.start_charge_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                self.next_command = None
                             print(f'channel #{channel_num} {"conneted" if battery_connected else "disconnected"}')
 
                         last_channel_data[channel_num] = last_data
