@@ -89,7 +89,7 @@ class MqttBridge:
                     charger_controller = controller_data.get('controller')
                     last_channel_data = controller_data.get('last_channel_data')
                     for channel_num in range(4):
-                        time.sleep(0.2)
+                        time.sleep(0.1)
                         last_data = last_channel_data.get(channel_num, {})
                         current_data = charger_controller.get_channel_info(channel_num)
 
@@ -126,7 +126,8 @@ class MqttBridge:
                         main_connected = current_data['voltage'] > 1000
                         battery_connected = cell_connected and main_connected
 
-                        print(f'cell 0: {current_cells[0]}, connected: {cell_connected}     main: {current_data["voltage"]}, connected: {main_connected}, battery: {battery_connected}')
+                        if channel_num == 1:
+                            print(f'cell 0: {current_cells[0]}, connected: {cell_connected}     main: {current_data["voltage"]}, connected: {main_connected}, battery: {battery_connected}')
 
                         last_channel_data[channel_num] = last_data
                 except controller.DeviceNotConnectedError:
