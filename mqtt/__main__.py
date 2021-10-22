@@ -75,6 +75,7 @@ class MqttBridge:
 
             if command_is_for_next:
                 self.next_command = {
+                    'command': command,
                     'cell_count': cell_count,
                     'current_ma': current_ma,
                     'timeout': time.time() + 60
@@ -148,7 +149,10 @@ class MqttBridge:
 
                             if battery_connected and self.next_command is not None:
                                 if time.time() < self.next_command['timeout']:
-                                    charger_controller.start_charge_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                    if self.next_command['command'] == 'charge':
+                                        charger_controller.start_charge_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                    elif self.next_command['command'] == 'storage':
+                                        charger_controller.start_storage_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
                                 self.next_command = None
                             print(f'channel #{channel_num} {"conneted" if battery_connected else "disconnected"}')
 
