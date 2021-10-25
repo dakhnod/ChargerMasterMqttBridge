@@ -44,7 +44,7 @@ class MqttBridge:
         self.charger_controllers = controllers
         while True:
             try:
-                self.mqtt.connect('home')
+                self.mqtt.connect('localhost')
                 break
             except ConnectionRefusedError:
                 print('mqtt connect failed, retrying...')
