@@ -74,6 +74,8 @@ class MqttBridge:
             current_ma = data['current_ma']
 
             if command_is_for_next:
+                if command not in ['charge', 'storage']:
+                    return
                 self.next_command = {
                     'command': command,
                     'cell_count': cell_count,
@@ -153,6 +155,11 @@ class MqttBridge:
                                         charger_controller.start_charge_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
                                     elif self.next_command['command'] == 'storage':
                                         charger_controller.start_storage_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                self.next_command['original_command'] = self.next_command['command']
+                                self.next_command['command'] = 'report'
+                                self.next_command['charger_num'] = charger_num
+                                self.next_command['channel_num'] = channel_num
+                                self.publish('chargers/next', json.dumps(self.next_command))
                                 self.next_command = None
                             print(f'channel #{channel_num} {"conneted" if battery_connected else "disconnected"}')
 
