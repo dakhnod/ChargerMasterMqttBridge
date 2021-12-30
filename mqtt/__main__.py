@@ -72,18 +72,25 @@ class MqttBridge:
 
             cell_count = data['cell_count']
             current_ma = data['current_ma']
+            use_balance_leads = data.get('use_balance_leads', True)
 
             if command_is_for_next:
                 self.next_command = {
                     'cell_count': cell_count,
                     'current_ma': current_ma,
-                    'timeout': time.time() + 60
+                    'timeout': time.time() + 60,
+                    'use_balance_leads': use_balance_leads
                 }
                 print(f'command for next scheduled: {self.next_command}')
-            elif command == 'charge':
-                self.charger_controllers[charger_num]['controller'].start_charge_lipo(channel_num, cell_count, current_ma)
+                return
+
+            channel_controller: controller.ChargerController.ChargerController = self.charger_controllers[charger_num]['controller']
+            channel_controller.set_use_balance_leads(channel_num, use_balance_leads)
+
+            if command == 'charge':
+                channel_controller.start_charge_lipo(channel_num, cell_count, current_ma)
             elif command == 'storage':
-                self.charger_controllers[charger_num]['controller'].start_storage_lipo(channel_num, cell_count, current_ma)
+                channel_controller.start_storage_lipo(channel_num, cell_count, current_ma)
         except json.JSONDecodeError as e:
             print('error decoding command')
         except KeyError as e:
