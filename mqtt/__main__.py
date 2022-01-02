@@ -72,7 +72,6 @@ class MqttBridge:
 
             cell_count = data['cell_count']
             current_ma = data['current_ma']
-            use_balance_leads = data.get('use_balance_leads', True)
 
             if command_is_for_next:
                 if command not in ['charge', 'storage']:
@@ -82,14 +81,13 @@ class MqttBridge:
                     'cell_count': cell_count,
                     'current_ma': current_ma,
                     'timeout': time.time() + 60,
-                    'use_balance_leads': use_balance_leads
                 }
                 print(f'command for next scheduled: {self.next_command}')
                 return
 
             charger_controller: controller.ChargerController.ChargerController = self.charger_controllers[charger_num]['controller']
-            charger_controller.enable_settings_mode(channel_num)
-            charger_controller.set_use_balance_leads(channel_num, use_balance_leads)
+            # charger_controller.enable_settings_mode(channel_num)
+            # charger_controller.set_use_balance_leads(channel_num, use_balance_leads)
 
             if command == 'charge':
                 charger_controller.start_charge_lipo(channel_num, cell_count, current_ma)
