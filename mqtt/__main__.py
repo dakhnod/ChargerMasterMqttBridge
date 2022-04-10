@@ -70,6 +70,7 @@ class MqttBridge:
                 self.charger_controllers[charger_num]['controller'].stop_charge(channel_num)
                 return
 
+            cell_type = data['cell_type']
             cell_count = data['cell_count']
             current_ma = data['current_ma']
 
@@ -78,6 +79,7 @@ class MqttBridge:
                     return
                 self.next_command = {
                     'command': command,
+                    'cell_type': cell_type,
                     'cell_count': cell_count,
                     'current_ma': current_ma,
                     'timeout': time.time() + 60,
@@ -90,14 +92,30 @@ class MqttBridge:
             # charger_controller.set_use_balance_leads(channel_num, use_balance_leads)
 
             if command == 'charge':
-                charger_controller.start_charge_lipo(channel_num, cell_count, current_ma)
+                self.start_charge(charger_controller, channel_num, cell_type, cell_count, current_ma)
             elif command == 'storage':
-                charger_controller.start_storage_lipo(channel_num, cell_count, current_ma)
+                self.start_storage(charger_controller, channel_num, cell_type, cell_count, current_ma)
         except json.JSONDecodeError as e:
             print('error decoding command')
         except KeyError as e:
             print('missing command params')
             print(e)
+
+    def start_charge(self, charger_controller, channel_num, cell_type, cell_count, current_ma):
+        if cell_type == 'lipo':
+            charger_controller.start_charge_lipo(channel_num, cell_count, current_ma)
+        elif cell_type == 'liion':
+            charger_controller.start_charge_liion(channel_num, cell_count, current_ma)
+        elif cell_type == 'lihv':
+            charger_controller.start_charge_lihv(channel_num, cell_count, current_ma)
+
+    def start_storage(self, charger_controller, channel_num, cell_type, cell_count, current_ma):
+        if cell_type == 'lipo':
+            charger_controller.start_storage_lipo(channel_num, cell_count, current_ma)
+        elif cell_type == 'liion':
+            charger_controller.start_storage_liion(channel_num, cell_count, current_ma)
+        elif cell_type == 'lihv':
+            charger_controller.start_storage_lihv(channel_num, cell_count, current_ma)
 
     def run_loop(self):
         next_publish = 0
@@ -158,9 +176,9 @@ class MqttBridge:
                             if battery_connected and self.next_command is not None:
                                 if time.time() < self.next_command['timeout']:
                                     if self.next_command['command'] == 'charge':
-                                        charger_controller.start_charge_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                        self.start_charge(charger_controller, channel_num, self.next_command['cell_type'], self.next_command['cell_count'], self.next_command['current_ma'])
                                     elif self.next_command['command'] == 'storage':
-                                        charger_controller.start_storage_lipo(channel_num, self.next_command['cell_count'], self.next_command['current_ma'])
+                                        self.start_storage(charger_controller, channel_num, self.next_command['cell_type'], self.next_command['cell_count'], self.next_command['current_ma'])
                                 self.next_command['original_command'] = self.next_command['command']
                                 self.next_command['command'] = 'report'
                                 self.next_command['charger_num'] = charger_num
